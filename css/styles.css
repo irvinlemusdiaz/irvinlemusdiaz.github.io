@@ -337,6 +337,34 @@ section { padding: 96px 0; }
 .proj h3 { font-size: 1.35rem; margin-bottom: 8px; }
 .proj p { color: var(--ink-soft); font-size: .98rem; margin-bottom: 16px; }
 .proj .stack { display: flex; gap: 8px; flex-wrap: wrap; }
+.proj-soon {
+  display: inline-block;
+  margin-top: 14px;
+  font-family: var(--font-sans);
+  font-size: .78rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  background: var(--paper-2);
+  border: 1.5px solid var(--ink);
+  border-radius: 50px;
+  padding: 4px 12px;
+  opacity: .6;
+}
+.proj-link {
+  display: inline-block;
+  margin-top: 14px;
+  font-family: var(--font-sans);
+  font-size: .88rem;
+  font-weight: 700;
+  color: var(--ink);
+  border-bottom: 2px solid var(--ink);
+  padding-bottom: 1px;
+  transition: color .2s, border-color .2s;
+}
+a.proj { display: block; text-decoration: none; color: inherit; }
+a.proj:hover .proj-link { color: var(--blue); border-color: var(--blue); }
 .proj .stack b {
   font-family: var(--font-sans);
   font-weight: 600;
