@@ -1,0 +1,45 @@
+---
+// Embeds a Godot web export that lives in public/games/<folder>/index.html.
+//
+// GitHub Pages can't send the cross-origin isolation headers that Godot's
+// *threaded* web export needs, so export with "Thread Support" turned OFF
+// (Godot 4.3+). The game only loads when the visitor clicks Play, so a big
+// .wasm file doesn't slow the page down.
+interface Props {
+  folder: string; // e.g. "freecalc"
+  title: string;
+  aspect?: string; // CSS aspect ratio, e.g. "16 / 9"
+}
+
+const { folder, title, aspect = '16 / 9' } = Astro.props;
+const src = `/games/${folder}/index.html`;
+---
+
+<div class="godot-embed" data-src={src}>
+  <div class="frame" style={`aspect-ratio:${aspect}`}>
+    <button class="start" type="button" aria-label={`Play ${title} in your browser`}>
+      <span class="play">▶</span>
+      Play {title} in your browser
+    </button>
+  </div>
+  <div class="bar">
+    <span>Runs in your browser · built with Godot</span>
+    <a href={src} target="_blank" rel="noopener">Open full screen ↗</a>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>('.godot-embed').forEach((embed) => {
+    const btn = embed.querySelector('.start');
+    const frame = embed.querySelector('.frame');
+    if (!btn || !frame) return;
+    btn.addEventListener('click', () => {
+      const iframe = document.createElement('iframe');
+      iframe.src = embed.dataset.src ?? '';
+      iframe.title = btn.getAttribute('aria-label') ?? 'Godot game';
+      iframe.allow = 'fullscreen; autoplay; gamepad';
+      frame.replaceChildren(iframe);
+      iframe.focus();
+    });
+  });
+</script>

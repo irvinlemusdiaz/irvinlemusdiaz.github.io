@@ -1,0 +1,43 @@
+---
+// Horizontal bar chart drawn with plain HTML/CSS (no JavaScript, no chart library).
+export interface Bar {
+  label: string;
+  value: number;
+  highlight?: boolean; // the winner / current setting
+  muted?: boolean; // baseline or rejected option
+  note?: string; // shown after the value, e.g. "+60%"
+}
+
+interface Props {
+  title: string;
+  unit: string;
+  bars: Bar[];
+  higherIsBetter?: boolean;
+}
+
+const { title, unit, bars, higherIsBetter = true } = Astro.props;
+const max = Math.max(...bars.map((b) => b.value), 0) || 1;
+const fmt = (n: number) => (Number.isInteger(n) ? n.toLocaleString('en-US') : n.toLocaleString('en-US', { maximumFractionDigits: 1 }));
+---
+
+<div class="chart">
+  <h4>{title}</h4>
+  <div class="unit">{unit} · {higherIsBetter ? 'higher is better' : 'lower is better'}</div>
+  {
+    bars.map((b) => (
+      <div class="bar-row">
+        <div class="bar-label">{b.label}</div>
+        <div class="bar-track" role="img" aria-label={`${b.label}: ${fmt(b.value)} ${unit}`}>
+          <div
+            class:list={['bar-fill', { hl: b.highlight, muted: b.muted }]}
+            style={`width:${Math.max((b.value / max) * 100, 2).toFixed(1)}%`}
+          />
+          <span class="bar-value">
+            {fmt(b.value)}
+            {b.note ? ` (${b.note})` : ''}
+          </span>
+        </div>
+      </div>
+    ))
+  }
+</div>
