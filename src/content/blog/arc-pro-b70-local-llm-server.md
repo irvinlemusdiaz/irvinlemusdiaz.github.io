@@ -34,17 +34,18 @@ The fix was to keep the card and its two PCIe bridges out of runtime power savin
 | Multi-token prediction (2 draft tokens) | Writing +40–60% | Yes |
 | 8-bit KV cache + vision on the GPU | Pictures ~5× faster, prompt reading −23% | Yes |
 | Q4_0 instead of Q6_K | Writing ~+40%, but couldn't finish a hard task | No |
-| vLLM with a 4-bit model + MTP | Writing nearly 2× faster | Parked: 3 of 14 cold starts failed |
+| vLLM with a 4-bit model + MTP | Writing ~1.85× faster (~60 tok/s) | Yes, as an option, after a BIOS fix |
 
 Two of these surprised me:
 
 - **Faster isn't better if it can't finish.** Q4_0 was the fastest llama.cpp option on this card, but on a hard coding prompt it thought for ~32,000 tokens twice and never wrote the answer. Q6 finished with every one of its own tests passing.
-- **vLLM is really fast on the B70**, but GPU faults during weight loading made it unreliable over my Thunderbolt link. I'll re-test when Intel ships a newer driver.
+- **vLLM is really fast on the B70**, but at first 3 of 14 cold starts hit a GPU fault while loading weights. A host BIOS update that fixed a Thunderbolt power-negotiation issue cured it: 15 of 15 clean starts since. It now runs as **Rune Fast** for long coding sessions. It takes ~165 s to swap in, so the faster-loading llama.cpp model stays the default.
 
 ## 4. Things I'd tell someone starting out
 
 - Hold your oneAPI packages (`apt-mark hold`) once things work. An unplanned `apt upgrade` broke GPU inference for me and meant rebuilding llama.cpp against the new runtime.
 - Benchmark with **long prompts**. My early "45 tok/s prompt" figure came from a tiny prompt; a 7,680-token prompt showed the real number.
+- Do BIOS and Thunderbolt firmware updates with the eGPU **disconnected** and the host on its own charger. My enclosure also powers the host, and a port reset in the middle of a firmware write is the last thing you want.
 - Keep a dated backup of every config change. Every experiment above was one `cp` away from rolling back.
 
-Next up: a needle-in-a-haystack test at ~200K context, and another vLLM attempt once the drivers move.
+Next up: a needle-in-a-haystack test at ~200K context, and testing Rune Fast with long contexts, thinking on, and pictures.

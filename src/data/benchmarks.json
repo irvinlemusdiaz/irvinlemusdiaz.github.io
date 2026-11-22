@@ -1,22 +1,125 @@
 {
-  "updated": "2026-11-20",
+  "updated": "2026-11-22",
   "hardware": [
-    { "k": "GPU", "v": "Intel Arc Pro B70 (Battlemage BMG-G31), 32 GB, 230 W" },
-    { "k": "Connection", "v": "Thunderbolt 4 eGPU enclosure (PCIe 4.0 x4 to the card)" },
-    { "k": "Host", "v": "Intel Core Ultra 7 165U (Meteor Lake), 64 GB RAM" },
-    { "k": "OS / driver", "v": "Ubuntu 26.04 LTS, kernel 7.0, in-kernel xe driver" },
-    { "k": "Engine", "v": "llama.cpp, SYCL + Level Zero backend, oneAPI 2026.2" },
-    { "k": "Serving", "v": "llama-swap (one port, models loaded on demand)" },
-    { "k": "Main model", "v": "Qwen3.8-27B, UD-Q6_K (22 GB), 128K context" },
-    { "k": "Images", "v": "ComfyUI + Z-Image Turbo on PyTorch XPU" }
+    {
+      "k": "GPU",
+      "v": "Intel Arc Pro B70 (Battlemage BMG-G31), 32 GB, 230 W"
+    },
+    {
+      "k": "Connection",
+      "v": "Thunderbolt 4 eGPU enclosure (PCIe 4.0 x4 to the card)"
+    },
+    {
+      "k": "Host",
+      "v": "Intel Core Ultra 7 165U (Meteor Lake), 64 GB RAM"
+    },
+    {
+      "k": "OS / driver",
+      "v": "Ubuntu 26.04 LTS, kernel 7.0, in-kernel xe driver"
+    },
+    {
+      "k": "Engine",
+      "v": "llama.cpp (SYCL + Level Zero, oneAPI 2026.2) and vLLM XPU"
+    },
+    {
+      "k": "Serving",
+      "v": "llama-swap: llama.cpp models + vLLM 4-bit (Rune Fast), loaded on demand"
+    },
+    {
+      "k": "Main model",
+      "v": "Qwen3.8-27B, UD-Q6_K (22 GB), 128K context"
+    },
+    {
+      "k": "Images",
+      "v": "ComfyUI + Z-Image Turbo on PyTorch XPU"
+    }
   ],
   "headline": [
-    { "n": "33.7", "l": "tok/s writing a short coding answer (current setup)" },
-    { "n": "641", "l": "tok/s reading an 8K-token prompt" },
-    { "n": "4.3 s", "l": "to read a 1024×768 picture (vision on the GPU)" },
-    { "n": "6.5 s", "l": "per 1024×1024 image with Z-Image Turbo" }
+    {
+      "n": "60",
+      "l": "tok/s writing with vLLM 4-bit + MTP (Rune Fast)"
+    },
+    {
+      "n": "33.7",
+      "l": "tok/s writing with llama.cpp Q6 + MTP (default Rune)"
+    },
+    {
+      "n": "641",
+      "l": "tok/s reading an 8K-token prompt"
+    },
+    {
+      "n": "4.3 s",
+      "l": "to read a 1024×768 picture (vision on the GPU)"
+    },
+    {
+      "n": "6.5 s",
+      "l": "per 1024×1024 image with Z-Image Turbo"
+    }
   ],
   "experiments": [
+    {
+      "id": "vllm-returns",
+      "date": "2026-11-22",
+      "title": "vLLM is back: a BIOS Thunderbolt fix ended the GPU faults",
+      "summary": "vLLM was parked a week earlier because 3 of 14 cold starts hit a GPU fault while loading weights. After a host BIOS update that fixes a Thunderbolt power-negotiation issue, with the same kernel, compute runtime and vLLM image, it started cleanly every time. It's now a second model in llama-swap, called Rune Fast.",
+      "setup": {
+        "engine": "vLLM 0.27.2rc1 XPU (Docker) vs llama.cpp SYCL, both behind llama-swap",
+        "model": "Qwen3.8-27B GPTQ Int4 + MTP4 vs UD-Q6_K + MTP2",
+        "method": "10 back-to-back cold starts counting kernel engine resets, then 5 rounds of Rune → vLLM → Rune swaps with a 400-token coding answer (thinking off), timed by wall clock"
+      },
+      "charts": [
+        {
+          "title": "Clean vLLM cold starts",
+          "unit": "% of starts with no GPU fault",
+          "bars": [
+            {
+              "label": "Before BIOS fix (11 of 14)",
+              "value": 78.6,
+              "muted": true
+            },
+            {
+              "label": "After BIOS fix (15 of 15)",
+              "value": 100,
+              "highlight": true
+            }
+          ]
+        },
+        {
+          "title": "Writing speed, thinking off",
+          "unit": "tokens/s (midpoint of 5 runs, wall clock)",
+          "bars": [
+            {
+              "label": "Rune: llama.cpp Q6 + MTP2",
+              "value": 32.4
+            },
+            {
+              "label": "Rune Fast: vLLM 4-bit + MTP4",
+              "value": 60.4,
+              "highlight": true,
+              "note": "≈1.85×"
+            }
+          ]
+        },
+        {
+          "title": "Time to swap the model in",
+          "unit": "seconds",
+          "higherIsBetter": false,
+          "bars": [
+            {
+              "label": "Rune (llama.cpp)",
+              "value": 27.5,
+              "highlight": true
+            },
+            {
+              "label": "Rune Fast (vLLM)",
+              "value": 164.5,
+              "muted": true
+            }
+          ]
+        }
+      ],
+      "verdict": "<b>Adopted as an option, not the default.</b> Rune Fast runs at 59–62 tok/s with 0 engine resets in 15 starts, but it takes ~165 s to swap in and is text-only for now. I pick it for long coding sessions in Continue and Qwen Code, then switch back so the phone app gets Rune quickly. Still to test: long contexts, thinking on, and pictures."
+    },
     {
       "id": "kv-cache-and-vision",
       "date": "2026-11-20",
@@ -32,18 +135,40 @@
           "title": "Writing speed, long answer",
           "unit": "tokens/s",
           "bars": [
-            { "label": "f16 KV, vision on CPU", "value": 29.7, "muted": true },
-            { "label": "q8_0 KV", "value": 28.7 },
-            { "label": "q8_0 KV + vision on GPU", "value": 29.0, "highlight": true }
+            {
+              "label": "f16 KV, vision on CPU",
+              "value": 29.7,
+              "muted": true
+            },
+            {
+              "label": "q8_0 KV",
+              "value": 28.7
+            },
+            {
+              "label": "q8_0 KV + vision on GPU",
+              "value": 29.0,
+              "highlight": true
+            }
           ]
         },
         {
           "title": "Reading an 8K-token prompt",
           "unit": "tokens/s",
           "bars": [
-            { "label": "f16 KV, vision on CPU", "value": 833, "muted": true },
-            { "label": "q8_0 KV", "value": 642 },
-            { "label": "q8_0 KV + vision on GPU", "value": 641, "highlight": true }
+            {
+              "label": "f16 KV, vision on CPU",
+              "value": 833,
+              "muted": true
+            },
+            {
+              "label": "q8_0 KV",
+              "value": 642
+            },
+            {
+              "label": "q8_0 KV + vision on GPU",
+              "value": 641,
+              "highlight": true
+            }
           ]
         },
         {
@@ -51,17 +176,37 @@
           "unit": "seconds",
           "higherIsBetter": false,
           "bars": [
-            { "label": "Vision on CPU", "value": 20, "muted": true },
-            { "label": "Vision on B70", "value": 4.3, "highlight": true, "note": "≈5× faster" }
+            {
+              "label": "Vision on CPU",
+              "value": 20,
+              "muted": true
+            },
+            {
+              "label": "Vision on B70",
+              "value": 4.3,
+              "highlight": true,
+              "note": "≈5× faster"
+            }
           ]
         },
         {
           "title": "Free VRAM after loading",
           "unit": "MiB",
           "bars": [
-            { "label": "f16 KV, vision on CPU", "value": 285, "muted": true },
-            { "label": "q8_0 KV", "value": 3922 },
-            { "label": "q8_0 KV + vision on GPU", "value": 2899, "highlight": true }
+            {
+              "label": "f16 KV, vision on CPU",
+              "value": 285,
+              "muted": true
+            },
+            {
+              "label": "q8_0 KV",
+              "value": 3922
+            },
+            {
+              "label": "q8_0 KV + vision on GPU",
+              "value": 2899,
+              "highlight": true
+            }
           ]
         }
       ],
@@ -82,20 +227,34 @@
           "title": "Writing speed, thinking off",
           "unit": "tokens/s",
           "bars": [
-            { "label": "llama.cpp Q6 + MTP2", "value": 32.7 },
-            { "label": "vLLM 4-bit + MTP4", "value": 56.8, "highlight": true }
+            {
+              "label": "llama.cpp Q6 + MTP2",
+              "value": 32.7
+            },
+            {
+              "label": "vLLM 4-bit + MTP4",
+              "value": 56.8,
+              "highlight": true
+            }
           ]
         },
         {
           "title": "Writing speed, thinking on",
           "unit": "tokens/s",
           "bars": [
-            { "label": "llama.cpp Q6 + MTP2", "value": 27.3 },
-            { "label": "vLLM 4-bit + MTP4", "value": 51, "highlight": true }
+            {
+              "label": "llama.cpp Q6 + MTP2",
+              "value": 27.3
+            },
+            {
+              "label": "vLLM 4-bit + MTP4",
+              "value": 51,
+              "highlight": true
+            }
           ]
         }
       ],
-      "verdict": "<b>Parked, not adopted.</b> 3 of 14 cold starts hit a GPU fault while copying weights (xe engine reset) and vLLM hung instead of exiting. Start-up also takes 130–200 s vs ~25 s for llama.cpp. Re-test with the next Intel driver or vLLM XPU release; the bar is 0 failures in 5 starts."
+      "verdict": "<b>Parked, not adopted.</b> 3 of 14 cold starts hit a GPU fault while copying weights (xe engine reset) and vLLM hung instead of exiting. Start-up also takes 130–200 s vs ~25 s for llama.cpp. Re-test bar: 0 failures in 5 starts. (Update: it passed after a BIOS fix on Nov 22, see the top of this page.)"
     },
     {
       "id": "q4-vs-q6",
@@ -112,18 +271,42 @@
           "title": "Writing speed, thinking off",
           "unit": "tokens/s",
           "bars": [
-            { "label": "UD-Q6_K", "value": 32.7, "highlight": true },
-            { "label": "UD-Q4_K_XL", "value": 28.3, "muted": true },
-            { "label": "Q4_0", "value": 45.0, "muted": true }
+            {
+              "label": "UD-Q6_K",
+              "value": 32.7,
+              "highlight": true
+            },
+            {
+              "label": "UD-Q4_K_XL",
+              "value": 28.3,
+              "muted": true
+            },
+            {
+              "label": "Q4_0",
+              "value": 45.0,
+              "muted": true
+            }
           ]
         },
         {
           "title": "Writing speed, thinking on",
           "unit": "tokens/s",
           "bars": [
-            { "label": "UD-Q6_K", "value": 27.3, "highlight": true },
-            { "label": "UD-Q4_K_XL", "value": 24.7, "muted": true },
-            { "label": "Q4_0", "value": 38.9, "muted": true }
+            {
+              "label": "UD-Q6_K",
+              "value": 27.3,
+              "highlight": true
+            },
+            {
+              "label": "UD-Q4_K_XL",
+              "value": 24.7,
+              "muted": true
+            },
+            {
+              "label": "Q4_0",
+              "value": 38.9,
+              "muted": true
+            }
           ]
         }
       ],
@@ -144,16 +327,34 @@
           "title": "Writing speed, thinking off",
           "unit": "tokens/s",
           "bars": [
-            { "label": "No MTP", "value": 20.1, "muted": true },
-            { "label": "MTP n-max 2", "value": 32.7, "highlight": true, "note": "+60%" }
+            {
+              "label": "No MTP",
+              "value": 20.1,
+              "muted": true
+            },
+            {
+              "label": "MTP n-max 2",
+              "value": 32.7,
+              "highlight": true,
+              "note": "+60%"
+            }
           ]
         },
         {
           "title": "Writing speed, thinking on",
           "unit": "tokens/s",
           "bars": [
-            { "label": "No MTP", "value": 19.5, "muted": true },
-            { "label": "MTP n-max 2", "value": 27.3, "highlight": true, "note": "+40%" }
+            {
+              "label": "No MTP",
+              "value": 19.5,
+              "muted": true
+            },
+            {
+              "label": "MTP n-max 2",
+              "value": 27.3,
+              "highlight": true,
+              "note": "+40%"
+            }
           ]
         }
       ],
@@ -174,24 +375,64 @@
           "title": "Prompt processing (pp4096)",
           "unit": "tokens/s",
           "bars": [
-            { "label": "fa off · ubatch 512 (old)", "value": 770, "muted": true },
-            { "label": "fa off · ubatch 1024", "value": 777 },
-            { "label": "fa on · ubatch 512", "value": 648 },
-            { "label": "fa on · ubatch 1024", "value": 814 },
-            { "label": "fa off · ubatch 2048", "value": 873 },
-            { "label": "fa on · ubatch 2048", "value": 932, "highlight": true }
+            {
+              "label": "fa off · ubatch 512 (old)",
+              "value": 770,
+              "muted": true
+            },
+            {
+              "label": "fa off · ubatch 1024",
+              "value": 777
+            },
+            {
+              "label": "fa on · ubatch 512",
+              "value": 648
+            },
+            {
+              "label": "fa on · ubatch 1024",
+              "value": 814
+            },
+            {
+              "label": "fa off · ubatch 2048",
+              "value": 873
+            },
+            {
+              "label": "fa on · ubatch 2048",
+              "value": 932,
+              "highlight": true
+            }
           ]
         },
         {
           "title": "Text generation (tg64)",
           "unit": "tokens/s",
           "bars": [
-            { "label": "fa off · ubatch 512 (old)", "value": 19.69, "muted": true },
-            { "label": "fa off · ubatch 1024", "value": 19.68 },
-            { "label": "fa on · ubatch 512", "value": 19.66 },
-            { "label": "fa on · ubatch 1024", "value": 19.6 },
-            { "label": "fa off · ubatch 2048", "value": 19.6 },
-            { "label": "fa on · ubatch 2048", "value": 19.55, "highlight": true }
+            {
+              "label": "fa off · ubatch 512 (old)",
+              "value": 19.69,
+              "muted": true
+            },
+            {
+              "label": "fa off · ubatch 1024",
+              "value": 19.68
+            },
+            {
+              "label": "fa on · ubatch 512",
+              "value": 19.66
+            },
+            {
+              "label": "fa on · ubatch 1024",
+              "value": 19.6
+            },
+            {
+              "label": "fa off · ubatch 2048",
+              "value": 19.6
+            },
+            {
+              "label": "fa on · ubatch 2048",
+              "value": 19.55,
+              "highlight": true
+            }
           ]
         }
       ],
@@ -212,8 +453,17 @@
           "title": "Generation speed",
           "unit": "tokens/s",
           "bars": [
-            { "label": "Running on the iGPU", "value": 1.9, "muted": true },
-            { "label": "Pinned to the B70", "value": 20, "highlight": true, "note": "≈10×" }
+            {
+              "label": "Running on the iGPU",
+              "value": 1.9,
+              "muted": true
+            },
+            {
+              "label": "Pinned to the B70",
+              "value": 20,
+              "highlight": true,
+              "note": "≈10×"
+            }
           ]
         }
       ],
