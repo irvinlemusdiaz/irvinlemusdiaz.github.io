@@ -1,12 +1,12 @@
 ---
 title: "Running a 27B model on an Intel Arc Pro B70 over Thunderbolt: what actually mattered"
-description: "How I turned an old ThinkPad and an Arc Pro B70 eGPU into a private AI server, the three bugs that hid behind each other, and which tuning changes were worth it."
+description: "How I turned a small Linux box and an Arc Pro B70 eGPU into a private AI server, the three bugs that hid behind each other, and which tuning changes were worth it."
 date: 2026-11-22
 tags: [homelab, intel-arc, llama.cpp, rune-ai]
 draft: true
 ---
 
-I wanted a local model I could fall back on for game-dev coding when cloud rate limits hit. The result is **Rune**: Qwen3.8-27B running on an **Intel Arc Pro B70** (32 GB) in a Thunderbolt eGPU enclosure, hosted on an old ThinkPad X1 Carbon running Ubuntu. It now writes at **~34 tokens/s** on short coding answers with a 128K context.
+I wanted a local model I could fall back on for game-dev coding when cloud rate limits hit. The result is **Rune**: Qwen3.8-27B running on an **Intel Arc Pro B70** (32 GB) in a Thunderbolt eGPU enclosure, hosted on a headless Ubuntu machine (Core Ultra 7 165U, 64 GB RAM). It now writes at **~34 tokens/s** on short coding answers with a 128K context.
 
 There aren't many write-ups for this card yet, so here's what mattered, in the order I learned it. Every number below has its full setup on the [benchmarks page](/benchmarks/).
 
@@ -16,7 +16,7 @@ My first working setup produced about **2 tokens/s**. That turned out to be thre
 
 1. **Garbage output** came from a real optimization bug for Xe2 GPUs. The fix was to build llama.cpp from current `master` instead of patching an old base.
 2. **The B70 was invisible to SYCL** because the build was missing the Level Zero *development headers* (`libze-dev`). Without them, cmake quietly disables Level Zero and SYCL only sees the integrated GPU. Check that cmake prints `Level Zero loader found`.
-3. **The real 2 tok/s killer:** work was running on the laptop's Meteor Lake iGPU. Pinning the device with `--main-gpu 0 -sm none` took it from **1.9 to 20 tok/s**.
+3. **The real 2 tok/s killer:** work was running on the host CPU's integrated Meteor Lake GPU. Pinning the device with `--main-gpu 0 -sm none` took it from **1.9 to 20 tok/s**.
 
 **Lesson:** "active (running)" doesn't mean it's on the right GPU. I now check `lspci` and `llama-server --list-devices` before trusting anything.
 

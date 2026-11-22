@@ -3,7 +3,7 @@
   "hardware": [
     { "k": "GPU", "v": "Intel Arc Pro B70 (Battlemage BMG-G31), 32 GB, 230 W" },
     { "k": "Connection", "v": "Thunderbolt 4 eGPU enclosure (PCIe 4.0 x4 to the card)" },
-    { "k": "Host", "v": "ThinkPad X1 Carbon, Core Ultra 7 165U, 64 GB RAM" },
+    { "k": "Host", "v": "Intel Core Ultra 7 165U (Meteor Lake), 64 GB RAM" },
     { "k": "OS / driver", "v": "Ubuntu 26.04 LTS, kernel 7.0, in-kernel xe driver" },
     { "k": "Engine", "v": "llama.cpp, SYCL + Level Zero backend, oneAPI 2026.2" },
     { "k": "Serving", "v": "llama-swap (one port, models loaded on demand)" },
@@ -201,7 +201,7 @@
       "id": "gpu-pinning",
       "date": "2026-07-29",
       "title": "The 10× fix: making sure work runs on the B70 at all",
-      "summary": "The laptop has two Intel GPUs: the B70 and the Meteor Lake iGPU. Without Level Zero dev headers at build time, SYCL only saw the iGPU, and without pinning, work could land there. Everything \"worked\", just painfully slowly.",
+      "summary": "The host has two Intel GPUs: the B70 and the Meteor Lake iGPU. Without Level Zero dev headers at build time, SYCL only saw the iGPU, and without pinning, work could land there. Everything \"worked\", just painfully slowly.",
       "setup": {
         "engine": "llama.cpp SYCL, rebuilt with libze-dev; --main-gpu 0 -sm none",
         "model": "Qwen3.6-27B Q6_K",

@@ -10,7 +10,7 @@ link: /benchmarks/
 linkLabel: See the benchmarks
 ---
 
-Rune is my own AI assistant, running entirely on my hardware: an old ThinkPad X1 Carbon turned into a headless Ubuntu server, with an **Intel Arc Pro B70 (32 GB)** in a Thunderbolt eGPU enclosure. It runs a 27B model at 128K context and is reachable from my PC, my phone, and from outside the house, without anything leaving my network.
+Rune is my own AI assistant, running entirely on my hardware: a small headless Ubuntu server (Intel Core Ultra 7, 64 GB RAM) with an **Intel Arc Pro B70 (32 GB)** in a Thunderbolt eGPU enclosure. It runs a 27B model at 128K context and is reachable from my PC, my phone, and from outside the house, without anything leaving my network.
 
 It started as a fallback for game-dev coding when cloud rate limits hit. It grew into a generalist assistant with its own phone app.
 
