@@ -1,0 +1,24 @@
+---
+import Base from '../../layouts/Base.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import { getCollection } from 'astro:content';
+
+const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+---
+
+<Base title="Projects — Irvin Lemus Diaz" description="Godot desktop and Android apps, Python automation, and a self-hosted AI server.">
+  <section class="page-hero">
+    <div class="wrap">
+      <span class="eyebrow">Selected work</span>
+      <h1>Projects.</h1>
+      <p class="lede">Things I've built, each one solving a specific problem, with the story of how it came together.</p>
+    </div>
+  </section>
+  <section>
+    <div class="wrap">
+      <div class="work-grid">
+        {projects.map((p, i) => <ProjectCard project={p} index={i} />)}
+      </div>
+    </div>
+  </section>
+</Base>

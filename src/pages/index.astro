@@ -1,0 +1,280 @@
+---
+import Base from '../layouts/Base.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import { getCollection } from 'astro:content';
+import bench from '../data/benchmarks.json';
+
+const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order).slice(0, 4);
+const posts = (await getCollection('blog', ({ data }) => (import.meta.env.PROD ? !data.draft : true)))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 3);
+const fmt = (d: Date) => d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' });
+const marquee = ['Godot 4', 'GDScript', 'Python', 'FastAPI', 'Android Apps', 'Desktop Apps', 'Automation', 'llama.cpp', 'Intel Arc', 'Self-hosted AI'];
+---
+
+<Base>
+  <!-- HERO -->
+  <section class="hero" id="top">
+    <div class="wrap">
+      <span class="status reveal"><span class="pulse"></span> Available for new projects</span>
+      <h1>
+        <span class="reveal" data-d="1" style="display:block">I build <span class="blue">Godot apps</span>,</span>
+        <span class="reveal" data-d="2" style="display:block"><span class="coral">automation</span> &amp;</span>
+        <span class="reveal" data-d="3" style="display:block"><em>private AI</em> servers.</span>
+      </h1>
+      <p class="lede reveal" data-d="4">
+        Freelance programmer building desktop and Android apps in Godot, Python automation, and self-hosted AI
+        infrastructure. I document everything I build here, from project write-ups to GPU benchmarks.
+      </p>
+      <div class="hero-cta reveal" data-d="4">
+        <a href="#contact" class="btn coral">Let's work together →</a>
+        <a href="/projects/" class="btn outline">See my work</a>
+        <a href="/benchmarks/" class="btn outline">Arc Pro B70 benchmarks</a>
+      </div>
+      <div class="hero-meta reveal" data-d="4">
+        <div class="stat"><div class="n">100%</div><div class="l">On-time delivery</div></div>
+        <div class="stat"><div class="n">24h</div><div class="l">Reply time</div></div>
+        <div class="stat"><div class="n">∞</div><div class="l">Revisions until right</div></div>
+      </div>
+    </div>
+    <div class="float f1">$ python organizer.py --apply</div>
+    <div class="float f2">rune: 33.7 tok/s ✓</div>
+    <div class="float f3">build: passing ✓</div>
+  </section>
+
+  <!-- MARQUEE -->
+  <div class="marquee">
+    <div class="track">
+      {[...marquee, ...marquee].map((m) => <span>{m}</span>)}
+    </div>
+  </div>
+
+  <!-- SERVICES -->
+  <section id="services">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <span class="eyebrow">What I do</span>
+        <h2>Services built around your goals.</h2>
+        <p>Whether you need a polished app, a tedious process automated, a custom tool built to spec, or your own private AI server, here's how I can help.</p>
+      </div>
+      <div class="grid-4">
+        <div class="card c1 reveal" data-d="1">
+          <div class="ico">⚡</div>
+          <h3>Desktop &amp; Android Apps</h3>
+          <p>Clean, distributable apps built with Godot 4. Single .exe on Windows, or an Android app, with no setup hassle for your users.</p>
+          <ul>
+            <li>Custom utility apps</li>
+            <li>Godot 4 / GDScript</li>
+            <li>Windows .exe &amp; Android</li>
+          </ul>
+        </div>
+        <div class="card c2 reveal" data-d="2">
+          <div class="ico">🤖</div>
+          <h3>Automation &amp; Scripts</h3>
+          <p>Stop doing it by hand. Python scripts and CLI tools that handle repetitive work reliably, with clean output and real tests.</p>
+          <ul>
+            <li>File &amp; data automation</li>
+            <li>CLI tools (click + rich)</li>
+            <li>Scheduled jobs &amp; pipelines</li>
+          </ul>
+        </div>
+        <div class="card c3 reveal" data-d="3">
+          <div class="ico">🛠️</div>
+          <h3>Custom Programs</h3>
+          <p>A specific problem off-the-shelf software can't solve? I'll design and build a tool around exactly your needs.</p>
+          <ul>
+            <li>Backend APIs (FastAPI)</li>
+            <li>Integrations &amp; custom tools</li>
+            <li>Built to your spec</li>
+          </ul>
+        </div>
+        <div class="card c4 reveal" data-d="4">
+          <div class="ico">🧠</div>
+          <h3>Self-hosted AI</h3>
+          <p>A private LLM server on your own hardware: nothing leaves your network, with monitoring, backups and secure remote access.</p>
+          <ul>
+            <li>llama.cpp / vLLM setup &amp; tuning</li>
+            <li>Intel Arc &amp; Linux GPU stacks</li>
+            <li>Dashboards, alerts &amp; apps</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WORK -->
+  <section id="work" style="background:var(--paper-2);border-top:2px solid var(--ink);border-bottom:2px solid var(--ink)">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <span class="eyebrow">Selected work</span>
+        <h2>A few things I've built.</h2>
+        <p>Real projects, each one solving a specific problem. Every one has a full write-up.</p>
+      </div>
+      <div class="work-grid">
+        {projects.map((p, i) => <ProjectCard project={p} index={i} />)}
+      </div>
+      <div style="margin-top:30px"><a href="/projects/" class="btn">All projects →</a></div>
+    </div>
+  </section>
+
+  <!-- FROM THE LAB -->
+  <section id="lab">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <span class="eyebrow">From the lab</span>
+        <h2>Benchmarks &amp; write-ups.</h2>
+        <p>I run my own AI server on an Intel Arc Pro B70 and publish what I measure, because hardly anyone else has.</p>
+      </div>
+      <div class="split-2">
+        <div class="teaser reveal" data-d="1">
+          <span class="eyebrow">Intel Arc Pro B70 · 32 GB</span>
+          <div class="big" style="margin-top:16px">{bench.headline[0].n}<span style="font-size:1.4rem"> tok/s</span></div>
+          <h3>A 27B model, self-hosted.</h3>
+          <p>llama.cpp vs vLLM, Q4 vs Q6, multi-token prediction, flash attention and more, with the exact setup for every run.</p>
+          <a href="/benchmarks/" class="btn">See the benchmarks →</a>
+        </div>
+        <div class="reveal" data-d="2">
+          {posts.length === 0 && <p class="empty-note">First posts are on the way.</p>}
+          <div class="post-list">
+            {
+              posts.map((p) => (
+                <a class="post-item" href={`/blog/${p.id}/`}>
+                  <span class="date">{fmt(p.data.date)}</span>
+                  {p.data.draft && <span class="draft-badge">DRAFT</span>}
+                  <h3 style="font-size:1.25rem">{p.data.title}</h3>
+                  <p style="margin-bottom:0">{p.data.description}</p>
+                </a>
+              ))
+            }
+          </div>
+          <div style="margin-top:20px"><a href="/blog/" class="btn outline">All posts →</a></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROCESS -->
+  <section id="process" class="dark">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <span class="eyebrow">How it works</span>
+        <h2>A simple, transparent process.</h2>
+        <p>No surprises and no jargon. You'll always know exactly where your project stands.</p>
+      </div>
+      <div class="steps">
+        <div class="step reveal" data-d="1">
+          <div class="n">01</div>
+          <h3>Discover</h3>
+          <p>We talk through your goals, scope, and budget. You get a clear quote and timeline upfront.</p>
+        </div>
+        <div class="step reveal" data-d="2">
+          <div class="n">02</div>
+          <h3>Build</h3>
+          <p>I get to work with regular check-ins, so you can see progress and steer along the way.</p>
+        </div>
+        <div class="step reveal" data-d="3">
+          <div class="n">03</div>
+          <h3>Refine</h3>
+          <p>You review, I revise. We polish until it's exactly right, with no per-tweak nickel-and-diming.</p>
+        </div>
+        <div class="step reveal" data-d="4">
+          <div class="n">04</div>
+          <h3>Launch</h3>
+          <p>I ship it, hand over clean docs and source code, and stay available for support after go-live.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about">
+    <div class="wrap">
+      <div class="about">
+        <div class="bio reveal">
+          <span class="eyebrow">About me</span>
+          <h2 style="font-size:clamp(2rem,5vw,3.2rem);margin:14px 0 22px">Hi, I'm Irvin.</h2>
+          <p>
+            I'm a freelance programmer who builds apps and automation tools. I started with Godot, making free
+            productivity apps like a TI-84-style graphing calculator and a spaced-repetition flashcard app, and
+            expanded into Python automation and backend work.
+          </p>
+          <p>
+            These days I also run my own AI server, <strong>Rune</strong>, on an Intel Arc Pro B70, with its own Godot
+            Android app. It's where I learn Linux, GPU drivers, and infrastructure the hard way, and write it all up.
+          </p>
+          <p>
+            I believe in <strong>clear communication, honest estimates, and clean code</strong>. No disappearing acts,
+            no mystery invoices, and software that's easy for your users to run.
+          </p>
+          <a href="#contact" class="btn" style="margin-top:8px">Get in touch →</a>
+        </div>
+        <div class="stack-box reveal" data-d="2">
+          <h4>// Tech I work with</h4>
+          <div class="chips">
+            <b>Godot 4</b><b>GDScript</b><b>Python</b><b>JavaScript</b><b>FastAPI</b><b>click</b><b>rich</b><b>pytest</b><b>Git</b><b>REST APIs</b>
+          </div>
+          <h4>// Homelab &amp; AI</h4>
+          <div class="chips">
+            <b>Ubuntu</b><b>llama.cpp</b><b>SYCL / oneAPI</b><b>vLLM</b><b>ComfyUI</b><b>systemd</b><b>Docker</b><b>Tailscale</b>
+          </div>
+          <h4>// How I work</h4>
+          <div class="chips">
+            <b>Fixed quotes</b><b>Weekly updates</b><b>Source code handover</b><b>Documentation</b><b>Post-launch support</b>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" style="padding-top:0">
+    <div class="wrap">
+      <div class="sec-head reveal" style="max-width:680px">
+        <span class="eyebrow">Good to know</span>
+        <h2>Frequently asked.</h2>
+      </div>
+      <div class="reveal">
+        <div class="faq-item">
+          <button class="faq-q">How do you price projects? <span class="pm">+</span></button>
+          <div class="faq-a"><p>Most work is quoted as a fixed price after our first conversation, so you know the total upfront. For ongoing or open-ended work, I also offer a clear hourly rate. Either way, no hidden fees.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q">How long will my project take? <span class="pm">+</span></button>
+          <div class="faq-a"><p>It depends on scope, but I'll give you an honest timeline before we start, and stick to it. Small scripts can take days; full desktop apps are typically a few weeks.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q">Do I own the code? <span class="pm">+</span></button>
+          <div class="faq-a"><p>Yes. Once the project is paid for, the source code is yours, fully handed over with documentation so you're never locked in.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q">What if I need changes after launch? <span class="pm">+</span></button>
+          <div class="faq-a"><p>I stick around. Minor fixes after launch are on me, and I'm always available for future updates or new features at a fair rate.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q">Do you work with non-technical clients? <span class="pm">+</span></button>
+          <div class="faq-a"><p>Absolutely. I explain everything in plain language, keep jargon out of our conversations, and make sure you always know what's happening with your project and why.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact" style="padding-bottom:100px">
+    <div class="wrap">
+      <div class="contact-box reveal">
+        <div>
+          <span class="eyebrow">Let's talk</span>
+          <h2>Have a project in mind?</h2>
+          <p class="lede">Tell me what you're trying to build. I'll reply within 24 hours with honest thoughts and next steps, with no pressure and no sales pitch.</p>
+          <div class="direct"><a href="mailto:irvin.lemus.diaz@gmail.com">✉ irvin.lemus.diaz@gmail.com</a></div>
+        </div>
+        <form id="contactForm">
+          <input type="text" id="cf-name" placeholder="Your name" required />
+          <input type="email" id="cf-email" placeholder="Your email" required />
+          <textarea id="cf-msg" placeholder="What do you need built?" required></textarea>
+          <button type="submit">Send message →</button>
+        </form>
+      </div>
+    </div>
+  </section>
+</Base>

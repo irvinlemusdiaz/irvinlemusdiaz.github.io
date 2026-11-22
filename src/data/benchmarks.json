@@ -1,0 +1,223 @@
+{
+  "updated": "2026-11-20",
+  "hardware": [
+    { "k": "GPU", "v": "Intel Arc Pro B70 (Battlemage BMG-G31), 32 GB, 230 W" },
+    { "k": "Connection", "v": "Thunderbolt 4 eGPU enclosure (PCIe 4.0 x4 to the card)" },
+    { "k": "Host", "v": "ThinkPad X1 Carbon, Core Ultra 7 165U, 64 GB RAM" },
+    { "k": "OS / driver", "v": "Ubuntu 26.04 LTS, kernel 7.0, in-kernel xe driver" },
+    { "k": "Engine", "v": "llama.cpp, SYCL + Level Zero backend, oneAPI 2026.2" },
+    { "k": "Serving", "v": "llama-swap (one port, models loaded on demand)" },
+    { "k": "Main model", "v": "Qwen3.8-27B, UD-Q6_K (22 GB), 128K context" },
+    { "k": "Images", "v": "ComfyUI + Z-Image Turbo on PyTorch XPU" }
+  ],
+  "headline": [
+    { "n": "33.7", "l": "tok/s writing a short coding answer (current setup)" },
+    { "n": "641", "l": "tok/s reading an 8K-token prompt" },
+    { "n": "4.3 s", "l": "to read a 1024×768 picture (vision on the GPU)" },
+    { "n": "6.5 s", "l": "per 1024×1024 image with Z-Image Turbo" }
+  ],
+  "experiments": [
+    {
+      "id": "kv-cache-and-vision",
+      "date": "2026-11-20",
+      "title": "8-bit KV cache + moving vision onto the B70",
+      "summary": "Quantizing the KV cache to 8-bit freed about 3.6 GB of VRAM, which made room to run the vision projector on the GPU instead of the CPU. Writing speed barely moved; prompt reading dropped about 23%, and reading pictures got about 5× faster.",
+      "setup": {
+        "engine": "llama.cpp SYCL, MTP draft n-max 2",
+        "model": "Qwen3.8-27B UD-Q6_K, 128K context",
+        "method": "Custom Python bench: 400-token coding answer (short), ~8,100-token prompt (long), timestamp in every prompt to defeat the prompt cache"
+      },
+      "charts": [
+        {
+          "title": "Writing speed, long answer",
+          "unit": "tokens/s",
+          "bars": [
+            { "label": "f16 KV, vision on CPU", "value": 29.7, "muted": true },
+            { "label": "q8_0 KV", "value": 28.7 },
+            { "label": "q8_0 KV + vision on GPU", "value": 29.0, "highlight": true }
+          ]
+        },
+        {
+          "title": "Reading an 8K-token prompt",
+          "unit": "tokens/s",
+          "bars": [
+            { "label": "f16 KV, vision on CPU", "value": 833, "muted": true },
+            { "label": "q8_0 KV", "value": 642 },
+            { "label": "q8_0 KV + vision on GPU", "value": 641, "highlight": true }
+          ]
+        },
+        {
+          "title": "Time to read a 1024×768 picture",
+          "unit": "seconds",
+          "higherIsBetter": false,
+          "bars": [
+            { "label": "Vision on CPU", "value": 20, "muted": true },
+            { "label": "Vision on B70", "value": 4.3, "highlight": true, "note": "≈5× faster" }
+          ]
+        },
+        {
+          "title": "Free VRAM after loading",
+          "unit": "MiB",
+          "bars": [
+            { "label": "f16 KV, vision on CPU", "value": 285, "muted": true },
+            { "label": "q8_0 KV", "value": 3922 },
+            { "label": "q8_0 KV + vision on GPU", "value": 2899, "highlight": true }
+          ]
+        }
+      ],
+      "verdict": "<b>Kept both.</b> An 8K prompt now takes ~12.6 s to read instead of ~9.7 s, but pictures are ~5× faster and there's ~2.9 GB of headroom. A third MTP draft token fit with the extra memory but was no faster on short answers and slower on long ones (27.4 vs 28.5 tok/s), so it stayed at 2."
+    },
+    {
+      "id": "vllm-vs-llamacpp",
+      "date": "2026-11-15",
+      "title": "vLLM (4-bit + MTP) vs llama.cpp (Q6 + MTP)",
+      "summary": "A community recipe runs Qwen3.8-27B on the B70 with vLLM's XPU image, a GPTQ 4-bit model and 4-token MTP. It nearly doubled writing speed on the same coding prompt.",
+      "setup": {
+        "engine": "vLLM 0.27.2rc1 XPU (Docker) vs llama.cpp SYCL",
+        "model": "Qwen3.8-27B GPTQ Int4 + MTP vs UD-Q6_K + MTP",
+        "method": "Same coding question in both; vLLM limited to one request at a time"
+      },
+      "charts": [
+        {
+          "title": "Writing speed, thinking off",
+          "unit": "tokens/s",
+          "bars": [
+            { "label": "llama.cpp Q6 + MTP2", "value": 32.7 },
+            { "label": "vLLM 4-bit + MTP4", "value": 56.8, "highlight": true }
+          ]
+        },
+        {
+          "title": "Writing speed, thinking on",
+          "unit": "tokens/s",
+          "bars": [
+            { "label": "llama.cpp Q6 + MTP2", "value": 27.3 },
+            { "label": "vLLM 4-bit + MTP4", "value": 51, "highlight": true }
+          ]
+        }
+      ],
+      "verdict": "<b>Parked, not adopted.</b> 3 of 14 cold starts hit a GPU fault while copying weights (xe engine reset) and vLLM hung instead of exiting. Start-up also takes 130–200 s vs ~25 s for llama.cpp. Re-test with the next Intel driver or vLLM XPU release; the bar is 0 failures in 5 starts."
+    },
+    {
+      "id": "q4-vs-q6",
+      "date": "2026-11-15",
+      "title": "Q4 vs Q6 quantization: speed vs finishing the job",
+      "summary": "A 4-bit file would free 4–6 GB of VRAM, so I tested two 4-bit quants against Q6. On this backend Q4_K_XL was actually slower than Q6, while Q4_0 was much faster, because llama.cpp's SYCL kernels are best tuned for Q4_0 and Q6_K.",
+      "setup": {
+        "engine": "llama.cpp SYCL, MTP draft n-max 2",
+        "model": "Qwen3.8-27B: UD-Q6_K (22.0 GB), UD-Q4_K_XL (17.7 GB), Q4_0 (16.1 GB)",
+        "method": "Same coding prompt; quality test = Pratt-parser calculator with pytest tests"
+      },
+      "charts": [
+        {
+          "title": "Writing speed, thinking off",
+          "unit": "tokens/s",
+          "bars": [
+            { "label": "UD-Q6_K", "value": 32.7, "highlight": true },
+            { "label": "UD-Q4_K_XL", "value": 28.3, "muted": true },
+            { "label": "Q4_0", "value": 45.0, "muted": true }
+          ]
+        },
+        {
+          "title": "Writing speed, thinking on",
+          "unit": "tokens/s",
+          "bars": [
+            { "label": "UD-Q6_K", "value": 27.3, "highlight": true },
+            { "label": "UD-Q4_K_XL", "value": 24.7, "muted": true },
+            { "label": "Q4_0", "value": 38.9, "muted": true }
+          ]
+        }
+      ],
+      "verdict": "<b>Stayed on Q6.</b> Q4_0 never delivered an answer to the hard prompt: twice it thought for ~32,000 tokens (850 s) and was cut off, with its reasoning degrading into loops. Q6 finished with 71/71 of its own tests passing and 0 mismatches against Python on 5,000 random expressions."
+    },
+    {
+      "id": "mtp",
+      "date": "2026-11-15",
+      "title": "Multi-token prediction (MTP): 40–60% faster writing",
+      "summary": "Qwen3.8 GGUFs include a small MTP head that drafts the next tokens; the main model verifies them, so accepted guesses are nearly free. It only speeds up writing, not prompt reading. No rebuild or extra download was needed.",
+      "setup": {
+        "engine": "llama.cpp SYCL, --spec-type draft-mtp --spec-draft-n-max 2",
+        "model": "Qwen3.8-27B UD-Q6_K, 128K f16 KV",
+        "method": "Same coding prompt, with and without MTP"
+      },
+      "charts": [
+        {
+          "title": "Writing speed, thinking off",
+          "unit": "tokens/s",
+          "bars": [
+            { "label": "No MTP", "value": 20.1, "muted": true },
+            { "label": "MTP n-max 2", "value": 32.7, "highlight": true, "note": "+60%" }
+          ]
+        },
+        {
+          "title": "Writing speed, thinking on",
+          "unit": "tokens/s",
+          "bars": [
+            { "label": "No MTP", "value": 19.5, "muted": true },
+            { "label": "MTP n-max 2", "value": 27.3, "highlight": true, "note": "+40%" }
+          ]
+        }
+      ],
+      "verdict": "<b>Adopted.</b> 78% of drafted tokens were accepted with thinking off, 58% with thinking on. n-max 3 didn't fit in VRAM at the time (out-of-device-memory at load). Tool calling still worked."
+    },
+    {
+      "id": "flash-attention-ubatch",
+      "date": "2026-11-08",
+      "title": "Flash attention × micro-batch size",
+      "summary": "The old default (flash attention off, ubatch 512) was picked because flash attention was slower at small micro-batches. At ubatch 2048 it wins, and it also cut VRAM use by ~2.2 GB.",
+      "setup": {
+        "engine": "llama.cpp SYCL (llama-bench)",
+        "model": "Qwen3.6-27B Q6_K",
+        "method": "llama-bench -p 4096 -n 64 -b 2048 -r 2, with the server and watchdog stopped"
+      },
+      "charts": [
+        {
+          "title": "Prompt processing (pp4096)",
+          "unit": "tokens/s",
+          "bars": [
+            { "label": "fa off · ubatch 512 (old)", "value": 770, "muted": true },
+            { "label": "fa off · ubatch 1024", "value": 777 },
+            { "label": "fa on · ubatch 512", "value": 648 },
+            { "label": "fa on · ubatch 1024", "value": 814 },
+            { "label": "fa off · ubatch 2048", "value": 873 },
+            { "label": "fa on · ubatch 2048", "value": 932, "highlight": true }
+          ]
+        },
+        {
+          "title": "Text generation (tg64)",
+          "unit": "tokens/s",
+          "bars": [
+            { "label": "fa off · ubatch 512 (old)", "value": 19.69, "muted": true },
+            { "label": "fa off · ubatch 1024", "value": 19.68 },
+            { "label": "fa on · ubatch 512", "value": 19.66 },
+            { "label": "fa on · ubatch 1024", "value": 19.6 },
+            { "label": "fa off · ubatch 2048", "value": 19.6 },
+            { "label": "fa on · ubatch 2048", "value": 19.55, "highlight": true }
+          ]
+        }
+      ],
+      "verdict": "<b>Adopted -fa 1 --ubatch-size 2048.</b> In real use (7.7K-token prompt at 64K context) prompt reading went from ~600 to ~880–900 tok/s (+50%), generation at that depth from 17.5 to 18.55 tok/s, and free VRAM from 4.0 to 6.3 GB."
+    },
+    {
+      "id": "gpu-pinning",
+      "date": "2026-07-29",
+      "title": "The 10× fix: making sure work runs on the B70 at all",
+      "summary": "The laptop has two Intel GPUs: the B70 and the Meteor Lake iGPU. Without Level Zero dev headers at build time, SYCL only saw the iGPU, and without pinning, work could land there. Everything \"worked\", just painfully slowly.",
+      "setup": {
+        "engine": "llama.cpp SYCL, rebuilt with libze-dev; --main-gpu 0 -sm none",
+        "model": "Qwen3.6-27B Q6_K",
+        "method": "Generation speed before and after pinning to the B70"
+      },
+      "charts": [
+        {
+          "title": "Generation speed",
+          "unit": "tokens/s",
+          "bars": [
+            { "label": "Running on the iGPU", "value": 1.9, "muted": true },
+            { "label": "Pinned to the B70", "value": 20, "highlight": true, "note": "≈10×" }
+          ]
+        }
+      ],
+      "verdict": "<b>Lesson:</b> \"active (running)\" doesn't mean it's on the right GPU. Check that cmake reports Level Zero found, pin the device, and verify with lspci and --list-devices after every cold boot."
+    }
+  ]
+}

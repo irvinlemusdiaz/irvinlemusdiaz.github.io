@@ -1,0 +1,66 @@
+---
+import Base from '../../layouts/Base.astro';
+import GodotEmbed from '../../components/GodotEmbed.astro';
+import { getCollection, render } from 'astro:content';
+
+export async function getStaticPaths() {
+  const projects = await getCollection('projects');
+  return projects.map((project) => ({ params: { id: project.id }, props: { project } }));
+}
+
+const { project } = Astro.props;
+const { data } = project;
+const { Content } = await render(project);
+const statusLabel = { released: 'Released', 'in-progress': 'In progress', 'coming-soon': 'Coming soon' }[data.status];
+const external = data.link?.startsWith('http');
+---
+
+<Base title={`${data.title} — Irvin Lemus Diaz`} description={data.summary}>
+  <section class="page-hero">
+    <div class="wrap" style="max-width:1000px">
+      <a href="/projects/" class="eyebrow">Projects · {data.kind}</a>
+      <h1>{data.title}</h1>
+      <p class="lede">{data.summary}</p>
+      <div class="meta">
+        <span class:list={['status-pill', data.status]}>{statusLabel}</span>
+        <div class="tag-row">{data.stack.map((s) => <span class="tag-chip">{s}</span>)}</div>
+      </div>
+      <div class="project-cta">
+        {
+          data.link && (
+            <a class="btn coral" href={data.link} target={external ? '_blank' : undefined} rel={external ? 'noopener noreferrer' : undefined}>
+              {data.linkLabel ?? 'View project'} →
+            </a>
+          )
+        }
+        <a class="btn outline" href="/#contact">Need something like this?</a>
+      </div>
+    </div>
+  </section>
+
+  {
+    (data.godotEmbed || data.screenshots.length > 0) && (
+      <section style="padding:56px 0 0">
+        <div class="wrap" style="max-width:1000px">
+          {data.godotEmbed && <GodotEmbed folder={data.godotEmbed} title={data.title} />}
+          {data.screenshots.length > 0 && (
+            <div class="shots" style={data.godotEmbed ? 'margin-top:24px' : ''}>
+              {data.screenshots.map((s) => (
+                <figure>
+                  <img src={s.src} alt={s.alt} loading="lazy" />
+                  {s.caption && <figcaption>{s.caption}</figcaption>}
+                </figure>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+    )
+  }
+
+  <div class="wrap" style="max-width:1000px">
+    <article class="prose">
+      <Content />
+    </article>
+  </div>
+</Base>
