@@ -1,0 +1,105 @@
+---
+import Base from '../layouts/Base.astro';
+import BarChart from '../components/BarChart.astro';
+import data from '../data/benchmarks.json';
+
+const fmtDate = (d: string) =>
+  new Date(d + 'T12:00:00').toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+---
+
+<Base
+  title="Intel Arc Pro B70 LLM benchmarks — Irvin Lemus Diaz"
+  description="Real-world local LLM benchmarks on an Intel Arc Pro B70 (32 GB): llama.cpp SYCL vs vLLM, quantization, MTP, flash attention, KV cache and vision, with the exact setup for each run."
+>
+  <section class="page-hero">
+    <div class="wrap">
+      <span class="eyebrow">Homelab · Rune AI</span>
+      <h1>Arc Pro B70 benchmarks.</h1>
+      <p class="lede">
+        Not many people have published numbers for Intel's Arc Pro B70, so here are mine: a 27B model serving my
+        self-hosted assistant, Rune, over a Thunderbolt eGPU. Each run lists the engine, model, and method, and why I kept or rejected the change.
+      </p>
+      <div class="meta"><span>Last updated {fmtDate(data.updated)}</span></div>
+      <div class="headline-stats">
+        {
+          data.headline.map((h) => (
+            <div class="hs">
+              <div class="n">{h.n}</div>
+              <div class="l">{h.l}</div>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section style="padding-top:60px;padding-bottom:20px">
+    <div class="wrap">
+      <div class="sec-head" style="margin-bottom:26px">
+        <span class="eyebrow">The test bench</span>
+        <h2 style="font-size:clamp(1.8rem,4vw,2.6rem)">Hardware &amp; software.</h2>
+      </div>
+      <div class="spec-grid">
+        {
+          data.hardware.map((s) => (
+            <div class="spec">
+              <div class="k">{s.k}</div>
+              <div class="v">{s.v}</div>
+            </div>
+          ))
+        }
+      </div>
+      <p style="margin-top:18px;color:var(--ink-soft);font-size:.95rem;max-width:820px">
+        The card sits in a Thunderbolt enclosure, which limits model <em>loading</em> speed (~3 GB/s) but not
+        generation once the model is in VRAM. Speeds are single-user, one request at a time.
+      </p>
+      <nav class="toc" aria-label="Experiments">
+        {data.experiments.map((e) => <a href={`#${e.id}`}>{e.title}</a>)}
+      </nav>
+    </div>
+  </section>
+
+  <div class="wrap">
+    {
+      data.experiments.map((e) => (
+        <article class="experiment" id={e.id}>
+          <div class="exp-head">
+            <h2>{e.title}</h2>
+            <span class="date">{fmtDate(e.date)}</span>
+          </div>
+          <p class="summary">{e.summary}</p>
+          <p class="setup">
+            <strong>Engine:</strong> <code>{e.setup.engine}</code> · <strong>Model:</strong> <code>{e.setup.model}</code>
+            <br />
+            <strong>Method:</strong> {e.setup.method}
+          </p>
+          <div class="charts">
+            {e.charts.map((c) => (
+              <BarChart title={c.title} unit={c.unit} bars={c.bars} higherIsBetter={c.higherIsBetter !== false} />
+            ))}
+          </div>
+          <div class="verdict" set:html={e.verdict} />
+        </article>
+      ))
+    }
+  </div>
+
+  <section>
+    <div class="wrap">
+      <div class="contact-box">
+        <div>
+          <span class="eyebrow">Want this for your team?</span>
+          <h2>Need a private AI server?</h2>
+          <p class="lede">
+            I set up and tune self-hosted LLM servers: hardware choice, drivers, serving, monitoring, and
+            secure remote access, with nothing leaving your network.
+          </p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px;align-items:flex-start">
+          <a href="/#contact" class="btn">Let's talk →</a>
+          <a href="/projects/rune-ai/" class="btn outline">See the Rune AI project</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>

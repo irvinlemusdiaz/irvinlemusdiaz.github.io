@@ -1,0 +1,40 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection, render } from 'astro:content';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog', ({ data }) => (import.meta.env.PROD ? !data.draft : true));
+  return posts.map((post) => ({ params: { id: post.id }, props: { post } }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+const fmt = (d: Date) => d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
+---
+
+<Base title={`${post.data.title} — Irvin Lemus Diaz`} description={post.data.description}>
+  <section class="page-hero">
+    <div class="wrap" style="max-width:900px">
+      <a href="/blog/" class="eyebrow">Blog</a>
+      <h1 style="font-size:clamp(2.2rem,5.5vw,3.8rem)">{post.data.title}</h1>
+      <p class="lede">{post.data.description}</p>
+      <div class="meta">
+        <span>{fmt(post.data.date)}</span>
+        {post.data.updated && <span>· Updated {fmt(post.data.updated)}</span>}
+        {post.data.draft && <span class="draft-badge">DRAFT</span>}
+        <div class="tag-row">
+          {post.data.tags.map((t) => <span class="tag-chip">{t}</span>)}
+        </div>
+      </div>
+    </div>
+  </section>
+  <div class="wrap" style="max-width:900px">
+    <article class="prose">
+      <Content />
+      <hr />
+      <p>
+        Want something like this built or set up for you? <a href="/#contact">Get in touch</a>.
+      </p>
+    </article>
+  </div>
+</Base>

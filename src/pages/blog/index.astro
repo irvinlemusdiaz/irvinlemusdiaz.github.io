@@ -1,0 +1,41 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('blog', ({ data }) => (import.meta.env.PROD ? !data.draft : true))).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
+);
+const fmt = (d: Date) => d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
+---
+
+<Base title="Blog — Irvin Lemus Diaz" description="Write-ups on Godot projects, the Rune AI homelab, and Intel Arc Pro B70 experiments.">
+  <section class="page-hero">
+    <div class="wrap">
+      <span class="eyebrow">Writing</span>
+      <h1>Blog.</h1>
+      <p class="lede">Build logs, lessons learned, and experiments from my Godot projects and my self-hosted AI server.</p>
+    </div>
+  </section>
+  <section>
+    <div class="wrap" style="max-width:900px">
+      {posts.length === 0 && <p class="empty-note">First posts are on the way.</p>}
+      <div class="post-list">
+        {
+          posts.map((p) => (
+            <a class="post-item" href={`/blog/${p.id}/`}>
+              <span class="date">{fmt(p.data.date)}</span>
+              {p.data.draft && <span class="draft-badge">DRAFT</span>}
+              <h3>{p.data.title}</h3>
+              <p>{p.data.description}</p>
+              <div class="tag-row">
+                {p.data.tags.map((t) => (
+                  <span class="tag-chip">{t}</span>
+                ))}
+              </div>
+            </a>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+</Base>
