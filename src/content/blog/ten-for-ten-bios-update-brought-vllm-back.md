@@ -20,11 +20,11 @@ For anyone who lands here trying to build something similar, here's the hardware
 |---|---|---|
 | GPU | **Intel Arc Pro B70**, 32 GB | **$999** at Micro Center (around July, after a discount) |
 | Enclosure | **AOOSTAR AG03** eGPU dock: built-in 800 W power supply, Thunderbolt 5 and OCuLink ports | **$279** (still about that price as I write this) |
-| Host | Headless Ubuntu server, Intel Core Ultra 7 165U, 64 GB RAM, connected over Thunderbolt | already owned |
+| Host | Headless Ubuntu server, Intel Core Ultra 7 165U, 64 GB RAM, Thunderbolt 4 port | already owned |
 
 About that card price: Intel launched the B70 in March at $949, and listings have since climbed to roughly double that. I got lucky with my timing. If you're shopping now, check a few stores before you buy.
 
-About the enclosure: the AG03 also has an **OCuLink** port, which is a more direct PCIe connection than Thunderbolt. I tried to use it with an M.2-to-OCuLink adapter in my daily desktop. It didn't work: the desktop is a prebuilt, and its BIOS locked me out. Anyone semi-serious about this hobby already knows the rule: prebuilt machines come with proprietary limits. So Thunderbolt it is.
+About the enclosure: the AG03 also has an **OCuLink** port, which is a more direct PCIe connection than Thunderbolt. I tried to use it with an M.2-to-OCuLink adapter in my daily desktop. It didn't work: the desktop is a prebuilt, and its BIOS locked me out. Anyone semi-serious about this hobby already knows the rule: prebuilt machines come with proprietary limits. So Thunderbolt it is. One more detail: the AG03 supports Thunderbolt 5, but my host only has Thunderbolt 4, so that's the speed the link runs at.
 
 ## What changed: a firmware update
 
@@ -65,7 +65,13 @@ If "tokens per second" doesn't mean much to you yet: a token is roughly three-qu
 
 Its first real job was a small one from my Godot work: shuffle an array in GDScript. It wrote a correct Fisher–Yates shuffle, then pointed out that Godot already has a built-in `Array.shuffle()` I could use instead. Fast *and* helpful.
 
-<!-- Screen recording goes here: Rune Fast answering the GDScript shuffle prompt in Qwen Code. -->
+Here's that same prompt again, in Qwen Code inside VS Code, with **Rune Fast** selected and approvals set to **Ask**:
+
+![Qwen Code in VS Code answering the GDScript shuffle prompt with Rune Fast, including the built-in Array.shuffle() tip](/images/rune-fast-shuffle-answer.webp)
+
+Don't let the "6m 17s" fool you. That's the whole job, not the writing: thinking, 7 tool calls, creating the file, and running it through Godot 4.7 to make sure it had no errors. The answer itself was only 509 tokens, which at ~60 tokens/s takes under 10 seconds to write.
+
+![The finished fisher_yates_shuffle.gd file in VS Code, with Qwen Code's context panel showing the qwen3.8-27b-vllm model](/images/rune-fast-qwen-code-vscode.webp)
 
 ## Why speed is the whole game
 
@@ -77,7 +83,7 @@ The faster I get an answer, the faster I can move on to the next task, the next 
 
 Rune Fast takes about 165 seconds to load, compared with about 28 for Rune. Honestly? It doesn't bother me. Once the swap finishes, all that's left is speed and precision, and so far Rune Fast delivers both.
 
-When I'm coding I rarely swap at all. The only reason I switch back is for **vision and image work**: Rune can read pictures and generate images, but Rune Fast is text-only for now. Long contexts and "thinking" mode are also still untested on vLLM. That's the next mountain. Hardware limits which software tricks I can use, so I'll adapt to what I have and plan around it.
+When I'm coding I rarely swap at all. The only reason I switch back is for **vision and image work**: Rune can read pictures and generate images, but Rune Fast is text-only for now. Thinking mode works (you can see it in the screenshot above), but I haven't benchmarked it yet, and long contexts are still untested. That's the next mountain. Hardware limits which software tricks I can use, so I'll adapt to what I have and plan around it.
 
 ## Watch out for these
 

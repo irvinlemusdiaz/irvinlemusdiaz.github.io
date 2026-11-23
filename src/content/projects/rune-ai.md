@@ -17,7 +17,7 @@ It started as a fallback for game-dev coding when cloud rate limits hit. It grew
 ## What's in it
 
 - **Model serving:** llama.cpp built for Intel's SYCL / Level Zero backend, behind **llama-swap**, so one port serves several model configurations (quick, thinking, and a 256K "deep" mode) and swaps them on demand.
-- **Rune Fast:** a second engine, vLLM with a 4-bit model and 4-token MTP, at about 60 tok/s, nearly twice the default. It was parked after GPU faults during start-up, then came back after a host BIOS update fixed a Thunderbolt power issue: 15 clean starts out of 15.
+- **Rune Fast:** a second engine, vLLM with a 4-bit model and 4-token MTP, at about 60 tok/s, nearly twice the default. It was parked after GPU faults during start-up, then came back after a host firmware update, most likely thanks to its Thunderbolt 4 power-negotiation fix: 15 clean starts out of 15.
 - **Coding clients:** Continue and Qwen Code in VS Code, with Rune for quick questions and Rune Fast for long sessions.
 - **Speed work:** flash attention, multi-token prediction, an 8-bit KV cache and GPU vision, each one measured before it was kept. The numbers are on the [benchmarks page](/benchmarks/).
 - **Image generation:** ComfyUI + Z-Image Turbo on the same card, about 6.5 s per 1024×1024 image, swapped in automatically when an image is requested.

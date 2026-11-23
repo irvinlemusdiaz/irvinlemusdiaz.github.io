@@ -34,12 +34,12 @@ The fix was to keep the card and its two PCIe bridges out of runtime power savin
 | Multi-token prediction (2 draft tokens) | Writing +40–60% | Yes |
 | 8-bit KV cache + vision on the GPU | Pictures ~5× faster, prompt reading −23% | Yes |
 | Q4_0 instead of Q6_K | Writing ~+40%, but couldn't finish a hard task | No |
-| vLLM with a 4-bit model + MTP | Writing ~1.85× faster (~60 tok/s) | Yes, as an option, after a BIOS fix |
+| vLLM with a 4-bit model + MTP | Writing ~1.85× faster (~60 tok/s) | Yes, as an option, after a firmware update |
 
 Two of these surprised me:
 
 - **Faster isn't better if it can't finish.** Q4_0 was the fastest llama.cpp option on this card, but on a hard coding prompt it thought for ~32,000 tokens twice and never wrote the answer. Q6 finished with every one of its own tests passing.
-- **vLLM is really fast on the B70**, but at first 3 of 14 cold starts hit a GPU fault while loading weights. A host BIOS update that fixed a Thunderbolt power-negotiation issue cured it: 15 of 15 clean starts since. It now runs as **Rune Fast** for long coding sessions. It takes ~165 s to swap in, so the faster-loading llama.cpp model stays the default.
+- **vLLM is really fast on the B70**, but at first 3 of 14 cold starts hit a GPU fault while loading weights. After a host firmware update (most likely its Thunderbolt 4 power-negotiation fix), it's been 15 of 15 clean starts. It now runs as **Rune Fast** for long coding sessions. It takes ~165 s to swap in, so the faster-loading llama.cpp model stays the default.
 
 ## 4. Things I'd tell someone starting out
 

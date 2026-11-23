@@ -7,7 +7,7 @@
     },
     {
       "k": "Connection",
-      "v": "Thunderbolt 4 eGPU enclosure (PCIe 4.0 x4 to the card)"
+      "v": "AOOSTAR AG03 eGPU dock (Thunderbolt 5 + OCuLink, built-in 800 W PSU) on the host's Thunderbolt 4 port"
     },
     {
       "k": "Host",
@@ -60,8 +60,8 @@
     {
       "id": "vllm-returns",
       "date": "2026-11-22",
-      "title": "vLLM is back: a BIOS Thunderbolt fix ended the GPU faults",
-      "summary": "vLLM was parked a week earlier because 3 of 14 cold starts hit a GPU fault while loading weights. After a host BIOS update that fixes a Thunderbolt power-negotiation issue, with the same kernel, compute runtime and vLLM image, it started cleanly every time. It's now a second model in llama-swap, called Rune Fast.",
+      "title": "vLLM is back: clean starts after a firmware update",
+      "summary": "vLLM was parked a week earlier because 3 of 14 cold starts hit a GPU fault while loading weights. Then I updated the host's firmware: BIOS 1.51, whose release notes include a Thunderbolt 4 power-negotiation fix, plus the CPU microcode and Intel ME updates that came with it. With the same kernel, compute runtime and vLLM image, it started cleanly every time. I can't prove which part of the update fixed it. It's now a second model in llama-swap, called Rune Fast.",
       "setup": {
         "engine": "vLLM 0.27.2rc1 XPU (Docker) vs llama.cpp SYCL, both behind llama-swap",
         "model": "Qwen3.8-27B GPTQ Int4 + MTP4 vs UD-Q6_K + MTP2",
@@ -73,12 +73,12 @@
           "unit": "% of starts with no GPU fault",
           "bars": [
             {
-              "label": "Before BIOS fix (11 of 14)",
+              "label": "Before firmware update (11 of 14)",
               "value": 78.6,
               "muted": true
             },
             {
-              "label": "After BIOS fix (15 of 15)",
+              "label": "After firmware update (15 of 15)",
               "value": 100,
               "highlight": true
             }
@@ -254,7 +254,7 @@
           ]
         }
       ],
-      "verdict": "<b>Parked, not adopted.</b> 3 of 14 cold starts hit a GPU fault while copying weights (xe engine reset) and vLLM hung instead of exiting. Start-up also takes 130–200 s vs ~25 s for llama.cpp. Re-test bar: 0 failures in 5 starts. (Update: it passed after a BIOS fix on Nov 22, see the top of this page.)"
+      "verdict": "<b>Parked, not adopted.</b> 3 of 14 cold starts hit a GPU fault while copying weights (xe engine reset) and vLLM hung instead of exiting. Start-up also takes 130–200 s vs ~25 s for llama.cpp. Re-test bar: 0 failures in 5 starts. (Update: it passed after a host firmware update on Nov 22, see the top of this page.)"
     },
     {
       "id": "q4-vs-q6",
