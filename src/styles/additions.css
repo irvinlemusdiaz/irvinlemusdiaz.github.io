@@ -103,7 +103,8 @@
   font-size: .98rem; max-width: 900px;
 }
 .verdict b { color: var(--lime); }
-.toc { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 26px; }
+/* .toc is a <nav>, so override the site header's nav rule (fixed 74px height) */
+.toc { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 26px; height: auto; justify-content: flex-start; align-items: flex-start; }
 .toc a { font-size: .85rem; font-weight: 600; background: #fff; border: 2px solid var(--ink); border-radius: 50px; padding: 6px 14px; }
 .toc a:hover { background: var(--lime); }
 
