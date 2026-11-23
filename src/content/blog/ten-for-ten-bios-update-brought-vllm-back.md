@@ -3,7 +3,7 @@ title: "Ten for Ten: How a BIOS Update Brought vLLM Back"
 description: "A week ago I parked vLLM on my Intel Arc Pro B70 because it kept crashing on start-up. One firmware update later it went 15 for 15 and now writes at ~60 tokens/s, almost double my old setup."
 date: 2026-11-22
 tags: [homelab, intel-arc, vllm, rune-ai]
-draft: true
+draft: false
 ---
 
 A week ago I gave up on vLLM. Not forever, just "parked" it, which is homelab-speak for *I'm tired and this isn't working*.

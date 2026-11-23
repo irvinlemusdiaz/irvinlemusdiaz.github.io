@@ -3,7 +3,7 @@ title: "Running a 27B model on an Intel Arc Pro B70 over Thunderbolt: what actua
 description: "How I turned a small Linux box and an Arc Pro B70 eGPU into a private AI server, the three bugs that hid behind each other, and which tuning changes were worth it."
 date: 2026-11-22
 tags: [homelab, intel-arc, llama.cpp, rune-ai]
-draft: true
+draft: false
 ---
 
 I wanted a local model I could fall back on for game-dev coding when cloud rate limits hit. The result is **Rune**: Qwen3.8-27B running on an **Intel Arc Pro B70** (32 GB) in a Thunderbolt eGPU enclosure, hosted on a headless Ubuntu machine (Core Ultra 7 165U, 64 GB RAM). It now writes at **~34 tokens/s** on short coding answers with a 128K context.
