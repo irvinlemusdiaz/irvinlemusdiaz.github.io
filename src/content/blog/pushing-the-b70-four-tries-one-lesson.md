@@ -3,7 +3,7 @@ title: "Pushing the B70: Four Tries, One Lesson"
 description: "I spent two days trying to squeeze more speed out of my Intel Arc Pro B70. A newer llama.cpp, a bigger memory, a smaller model, more power. Almost all of it fell flat, and that's exactly why it was worth doing."
 date: 2026-11-25
 tags: [homelab, intel-arc, llama.cpp, rune-ai, beginners]
-draft: true
+draft: false
 ---
 
 After [Rune Fast came back](/blog/ten-for-ten-bios-update-brought-vllm-back/) at about 60 tokens per second, I got greedy. If one firmware update could do that, what else was this card hiding? So I spent two days trying to push my Intel Arc Pro B70 harder.
