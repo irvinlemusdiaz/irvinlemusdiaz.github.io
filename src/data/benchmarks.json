@@ -1,9 +1,13 @@
 {
-  "updated": "2026-11-22",
+  "updated": "2026-11-25",
   "hardware": [
     {
       "k": "GPU",
       "v": "Intel Arc Pro B70 (Battlemage BMG-G31), 32 GB, 230 W"
+    },
+    {
+      "k": "Clocks & power under load",
+      "v": "2.25–2.55 GHz (max 2.8), ~235 W, 51–66 °C; no adjustable power limit"
     },
     {
       "k": "Connection",
@@ -44,6 +48,10 @@
       "l": "tok/s writing with llama.cpp Q6 + MTP (default Rune)"
     },
     {
+      "n": "113K",
+      "l": "tokens read in a needle test, fact found, no crash (Rune)"
+    },
+    {
       "n": "641",
       "l": "tok/s reading an 8K-token prompt"
     },
@@ -57,6 +65,228 @@
     }
   ],
   "experiments": [
+    {
+      "id": "q5-vs-q6-2",
+      "date": "2026-11-25",
+      "title": "Q5 vs Q6: smaller, but not faster",
+      "summary": "A Q5 file is about 10% smaller than Q6, so in theory the card has less to read per token and should write faster. On this card it was about 5% slower, because Intel's kernels for Q6_K are better optimised than Q5_K's. The only gain was 1.6 GB more free memory.",
+      "setup": {
+        "engine": "llama.cpp SYCL (July build), MTP draft n-max 2, 8-bit KV",
+        "model": "Qwen3.8-27B UD-Q6_K (22 GB) vs UD-Q5_K_M (19.9 GB)",
+        "method": "Same session, same Rune settings with only the model file changed; 400-token answer (short) and ~8K-token prompt (long), two runs each"
+      },
+      "charts": [
+        {
+          "title": "Writing speed, short answer",
+          "unit": "tokens/s (midpoint of 2 runs)",
+          "bars": [
+            {
+              "label": "Q6 (Rune)",
+              "value": 35.0,
+              "highlight": true
+            },
+            {
+              "label": "Q5",
+              "value": 32.9,
+              "muted": true
+            }
+          ]
+        },
+        {
+          "title": "Writing speed, 8K prompt",
+          "unit": "tokens/s (midpoint of 2 runs)",
+          "bars": [
+            {
+              "label": "Q6 (Rune)",
+              "value": 28.6,
+              "highlight": true
+            },
+            {
+              "label": "Q5",
+              "value": 27.2,
+              "muted": true
+            }
+          ]
+        },
+        {
+          "title": "Free card memory after loading",
+          "unit": "GB",
+          "bars": [
+            {
+              "label": "Q6 (Rune)",
+              "value": 2.9
+            },
+            {
+              "label": "Q5",
+              "value": 4.5,
+              "highlight": true
+            }
+          ]
+        }
+      ],
+      "verdict": "<b>Not adopted.</b> Smaller isn't automatically faster: which formats the Intel kernels are tuned for matters more than file size. Q5 was deleted. (Q4_0 <i>was</i> faster in an earlier test because it's the best-tuned format of all, but it couldn't finish a hard task.)"
+    },
+    {
+      "id": "llamacpp-b12716",
+      "date": "2026-11-25",
+      "title": "Newer llama.cpp (b12716): faster benchmark, slower in real use",
+      "summary": "I built the latest llama.cpp to replace my July build. The first build read prompts 2.3× slower because one build option, GGML_SYCL_F16, was missing. Rebuilt with it, llama-bench looked great. But in real use multi-token prediction (MTP) is broken on Intel in this version, and Rune fell to about 14 tok/s.",
+      "setup": {
+        "engine": "llama.cpp SYCL: July build (e9fa0781f) vs b12716 (bb692ef), both with GGML_SYCL_F16=ON",
+        "model": "Qwen3.8-27B UD-Q6_K, 8-bit KV, flash attention on",
+        "method": "llama-bench pp4096 / tg128 with the server stopped, then a test server with Rune's real settings, with and without MTP"
+      },
+      "charts": [
+        {
+          "title": "llama-bench prompt reading (pp4096)",
+          "unit": "tokens/s",
+          "bars": [
+            {
+              "label": "July build",
+              "value": 840
+            },
+            {
+              "label": "b12716, missing F16 flag",
+              "value": 363,
+              "muted": true
+            },
+            {
+              "label": "b12716, with F16 flag",
+              "value": 1415,
+              "highlight": true
+            }
+          ]
+        },
+        {
+          "title": "Real use: Rune's writing speed, short answer",
+          "unit": "tokens/s",
+          "bars": [
+            {
+              "label": "July build + MTP (live)",
+              "value": 35.0,
+              "highlight": true
+            },
+            {
+              "label": "b12716, no MTP",
+              "value": 22.9
+            },
+            {
+              "label": "b12716 + MTP",
+              "value": 13.7,
+              "muted": true
+            }
+          ]
+        },
+        {
+          "title": "Real use: reading an 8K prompt",
+          "unit": "tokens/s",
+          "bars": [
+            {
+              "label": "July build + MTP (live)",
+              "value": 642
+            },
+            {
+              "label": "b12716, no MTP",
+              "value": 1344,
+              "highlight": true
+            },
+            {
+              "label": "b12716 + MTP",
+              "value": 169,
+              "muted": true
+            }
+          ]
+        }
+      ],
+      "verdict": "<b>Kept the July build live.</b> b12716 without MTP would trade about a third of Rune's writing speed for 2× faster reading. With MTP it's slower at everything. It stays on disk for a re-test when a later release fixes MTP on Intel. Tip: if you build llama.cpp for Arc, check that <code>GGML_SYCL_F16=ON</code> is in your CMake cache."
+    },
+    {
+      "id": "deep-needle-test",
+      "date": "2026-11-24",
+      "title": "Rune Deep: MTP at 192K, then a needle test",
+      "summary": "Rune Deep used the same model with a 256K context but no MTP, so it was slow. MTP's draft memory grows with context, so it didn't fit at 256K or 224K, only at 192K. That made Deep about 80% faster. Then a needle test (a fact hidden two-thirds of the way through a huge document) crashed Deep twice. Plain Rune, with more free memory, passed it.",
+      "setup": {
+        "engine": "llama.cpp SYCL (July build), 8-bit KV",
+        "model": "Qwen3.8-27B UD-Q6_K: Deep at 192K + MTP vs Rune at 128K + MTP",
+        "method": "bench-rune.py (short answer + 8K prompt), then needle-test.py: one fact hidden at 66% of a generated auction ledger"
+      },
+      "charts": [
+        {
+          "title": "Deep's writing speed, 8K prompt",
+          "unit": "tokens/s",
+          "bars": [
+            {
+              "label": "Deep, no MTP (256K)",
+              "value": 16.1,
+              "muted": true
+            },
+            {
+              "label": "Deep + MTP (192K)",
+              "value": 29.3,
+              "highlight": true,
+              "note": "+80%"
+            }
+          ]
+        },
+        {
+          "title": "Needle test: tokens read before it finished or crashed",
+          "unit": "thousand tokens",
+          "bars": [
+            {
+              "label": "Deep, ubatch 2048: crashed",
+              "value": 92,
+              "muted": true
+            },
+            {
+              "label": "Deep, ubatch 512: crashed",
+              "value": 115,
+              "muted": true
+            },
+            {
+              "label": "Rune: finished, fact found",
+              "value": 113,
+              "highlight": true
+            }
+          ]
+        },
+        {
+          "title": "Free card memory after loading",
+          "unit": "GB",
+          "bars": [
+            {
+              "label": "Deep + MTP (192K)",
+              "value": 1.0,
+              "muted": true
+            },
+            {
+              "label": "Rune (128K)",
+              "value": 2.9,
+              "highlight": true
+            }
+          ]
+        },
+        {
+          "title": "Deep's prompt reading slows with depth",
+          "unit": "tokens/s",
+          "bars": [
+            {
+              "label": "at 8K tokens",
+              "value": 635
+            },
+            {
+              "label": "at 92K tokens",
+              "value": 155
+            },
+            {
+              "label": "at 115K tokens",
+              "value": 121,
+              "muted": true
+            }
+          ]
+        }
+      ],
+      "verdict": "<b>Deep retired.</b> Each crash followed the same chain: the attention routine ran out of working memory, fell back to a slower kernel, hit the driver's job timeout, and the GPU reset. Rune read 113K tokens in 872 s and found the fact, so long sessions stay on Rune. Free card memory, not the context number, decides how deep a model can go. Worth retrying with a future llama.cpp or a bigger card."
+    },
     {
       "id": "vllm-returns",
       "date": "2026-11-22",
