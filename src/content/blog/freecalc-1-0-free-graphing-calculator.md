@@ -14,7 +14,7 @@ Today, **version 1.0** is out on itch.io.
 
 **[Download FreeCalc 1.0 for free](https://freeeducationaltools.itch.io/free-graphing-calculator)**
 
-<!-- Screenshot: the calculator tab -->
+![FreeCalc: free offline graphing calculator, with graphs, inequalities, integrals, best fit and stats](/images/freecalc-cover.webp)
 
 ## Why I made it
 
@@ -26,6 +26,8 @@ FreeCalc won't replace a physical calculator on a proctored exam. But for homewo
 
 **Calculator.** Type full expressions like `sin(45) + sqrt(16)` and get the answer instantly. It handles parentheses, order of operations, trig, logs and square roots. Your history stays on screen so you can scroll back through your work, and **ANS** and memory buttons (M+, MR, MC) work just like on a handheld calculator.
 
+![The FreeCalc calculator with the History tab open, showing answers like log(1000) = 3 and sqrt(144)+3^2 = 21](/images/freecalc-calculator-history.webp)
+
 **Graphing.** Plot up to **6 functions at once**, each in its own color. Type `sin(x)` in Y1 and `x^2-3` in Y2, hit Graph, and there they are. Scroll to zoom, click and drag to move around.
 
 **Analysis tools.** Click your way to the answers you'd normally hunt for:
@@ -36,6 +38,8 @@ FreeCalc won't replace a physical calculator on a proctored exam. But for homewo
 - **Roots:** find where a curve crosses the x-axis
 - **Zoom Fit:** frame all your curves automatically
 
+![sin(x) and cos(x) graphed in radians, with a tangent line drawn on sin(x) at x = 0.9 and its slope and equation shown below the graph](/images/freecalc-trace-tangent.webp)
+
 **Table of values.** Pick a start, an end and a step, and get a table of x and y values. You can export it to a spreadsheet.
 
 **Statistics.** Paste in a list of numbers and get the mean, median, min, max, sum and both kinds of standard deviation.
@@ -43,8 +47,6 @@ FreeCalc won't replace a physical calculator on a proctored exam. But for homewo
 **Unit converter.** Length, weight, temperature, volume, area, speed, time and data, updating as you type.
 
 **Equation solver.** Type an equation and hit Solve. FreeCalc figures out what kind it is on its own: linear, quadratic (including complex answers), higher-degree polynomials, and even ones like `sin(x) = 0.5`. There's also a mode for solving two equations with two unknowns.
-
-<!-- Screenshot: equation solver -->
 
 ## What's new in 1.0
 
@@ -57,11 +59,19 @@ This is the biggest update yet:
 - **A real keyboard workflow.** Type `sin(`, `sqrt(`, `pi` and `ans` straight from your keyboard. `2x4` means 2 × 4. Enter calculates.
 - **Copy and paste.** Ctrl+C copies your answer and Ctrl+V pastes an expression. Right-click the display or your history for more.
 - **It remembers you.** DEG/RAD, memory, your last tab and your window size are still there next time.
-- **A 24-page user guide** with step-by-step how-tos and screenshots, included in the download.
+- **A 24-page user guide** with step-by-step "How to" boxes and screenshots, included in the download. It walks through every tab, whether you're doing homework, reviewing for a quiz, or finishing a lab report at 11 p.m. the night before.
 
-<!-- Screenshot: inequality shading -->
+![Two inequalities graphed together, y > x^2 - 4 and y <= -x + 2, with the overlapping solution region shaded and both crossing points found: (-2, 0) and (1, -3)](/images/freecalc-inequalities.webp)
 
-<!-- Screenshot: best-fit line with r² -->
+*Two inequalities on one graph. The overlap is the solution, and Intersect finds where the boundaries cross.*
+
+![Ten lab data points plotted with a linear best-fit line: y = 2.4564x + 0.78, r² = 0.9984](/images/freecalc-best-fit.webp)
+
+*Paste in 10 data points, click Fit, and get y = 2.4564x + 0.78 with r² = 0.9984. One click copies it to Y=.*
+
+![The area under y = x^2 - 4 from x = -2 to 2 shaded, with the integral shown as -10.666667, plus the roots of both functions marked](/images/freecalc-integral-roots.webp)
+
+*Analyze finds the integral of x² − 4 from −2 to 2 (−10.67), and Roots marks where each curve crosses the x-axis.*
 
 ## The bug that disappointed me
 
