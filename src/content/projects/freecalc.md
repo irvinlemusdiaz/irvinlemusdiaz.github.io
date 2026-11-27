@@ -8,11 +8,15 @@ order: 2
 color: blue
 link: https://freeeducationaltools.itch.io/free-graphing-calculator
 linkLabel: Download free on itch.io
+screenshots:
+  - { src: /images/01_inequalities.png, alt: "Two inequalities graphed in FreeCalc with the overlapping solution region shaded", caption: "Inequalities with shaded solutions" }
+  - { src: /images/04_best_fit.png, alt: "Lab data points with a linear best-fit line and r squared in FreeCalc", caption: "Best-fit lines with r²" }
+  - { src: /images/05_integral_roots.png, alt: "The integral of x squared minus 4 shaded in FreeCalc, with roots marked", caption: "Integrals and roots" }
 ---
 
 A graphing calculator costs over $130, the price has barely moved in decades, and schools still require one. FreeCalc won't pass a proctored exam, but for homework, studying, and understanding the math, it does what a handheld graphing calculator does: free, offline, no account, no ads, and a single `.exe` with nothing to install.
 
-**Version 1.0** is out now on [itch.io](https://freeeducationaltools.itch.io/free-graphing-calculator).
+**Version 1.0** is out now on [itch.io](https://freeeducationaltools.itch.io/free-graphing-calculator). Read the [launch post](/blog/freecalc-1-0-free-graphing-calculator/) for the full story.
 
 ## Features
 

@@ -3,7 +3,7 @@ title: "FreeCalc 1.0: A Free Graphing Calculator for Every Student"
 description: "FreeCalc 1.0 is out: a free, offline graphing calculator for Windows. No account, no ads, no internet. Here's what it does, what's new, and how to get it on a school laptop in two minutes."
 date: 2026-11-27
 tags: [freecalc, students, teachers, godot, windows]
-draft: true
+draft: false
 ---
 
 A graphing calculator can cost over $130. That price has barely moved in decades, and schools still require one for class. For a lot of families, that's a real problem.
